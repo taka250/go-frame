@@ -9,12 +9,12 @@ import (
 type H map[string]interface{}
 
 type Context struct {
-	Writer http.ResponseWriter
-	Req    *http.Request
-	Path   string
-	Method string
-
+	Writer     http.ResponseWriter
+	Req        *http.Request
+	Path       string
+	Method     string
 	StatusCode int
+	Params     map[string]string //前缀树的增加，模糊匹配导致增加参数
 }
 
 //初始化
@@ -76,4 +76,9 @@ func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
+}
+
+func (c *Context) Param(key string) string { //返回参数
+	value := c.Params[key]
+	return value
 }

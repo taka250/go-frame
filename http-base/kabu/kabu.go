@@ -7,13 +7,25 @@ import (
 //定义函数类型
 type HandlerFunc func(c *Context)
 
-type Engine struct {
-	Router *Router
-}
+type (
+	Engine struct {
+		Router       *Router
+		*RouterGroup                //匿名结构体
+		groups       []*RouterGroup // 存储所有的groups
+	}
+
+	RouterGroup struct {
+		prefix      string //前缀
+		middlewares []HandlerFunc
+		parent      *RouterGroup //父类group
+		engine      *Engine      //所有的groups 享有一个引擎
+	}
+)
 
 //New函数是构造器
 func New() *Engine {
-	return &Engine{Router: newRouter()}
+	engine:= &Engine{Router: newRouter()}
+	engine.
 }
 
 //以下都为方法
