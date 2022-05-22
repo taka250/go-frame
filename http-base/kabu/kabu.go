@@ -1,6 +1,7 @@
 package kabu
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ type (
 	}
 
 	RouterGroup struct {
-		prefix      string //前缀
+		Prefix      string //前缀
 		middlewares []HandlerFunc
 		parent      *RouterGroup //父类group
 		engine      *Engine      //所有的groups 享有一个引擎
@@ -24,24 +25,39 @@ type (
 
 //New函数是构造器
 func New() *Engine {
-	engine:= &Engine{Router: newRouter()}
-	engine.
+	engine := &Engine{Router: newRouter()}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup} //每个都映射到引擎
+	return engine
 }
 
-//以下都为方法
+//构造一个新的group  其实是子group
+func (group *RouterGroup) Group(prefix string) *RouterGroup {
+	engine := group.engine
+	newGroup := &RouterGroup{
+		Prefix: group.Prefix + prefix,
+		engine: engine,
+		parent: group,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return newGroup
+}
+
 //增加一个路由
-func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
-	engine.Router.addRoute(method, pattern, handler)
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := group.Prefix + comp
+	log.Printf("Route %4s - %s", method, pattern)
+	group.engine.Router.addRoute(method, pattern, handler)
 }
 
 //get
-func (engine *Engine) GET(pattern string, handler HandlerFunc) {
-	engine.addRoute("GET", pattern, handler)
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	group.addRoute("GET", pattern, handler)
 }
 
 //post
-func (engine *Engine) POST(pattern string, handler HandlerFunc) {
-	engine.addRoute("POST", pattern, handler)
+func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+	group.addRoute("POST", pattern, handler)
 }
 
 //开启监听

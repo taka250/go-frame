@@ -1,7 +1,6 @@
 package kabu
 
 import (
-	"log"
 	"net/http"
 	"strings"
 )
@@ -39,7 +38,7 @@ func parsePattern(pattern string) []string {
 
 //增加路由,同时插入对应方法的节点
 func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
-	log.Printf("Route %4s - %s", method, pattern)
+
 	parts := parsePattern(pattern)
 	_, ok := r.roots[method] //查看是否已经存在有关method的路由
 	if !ok {
