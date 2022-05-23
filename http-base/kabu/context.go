@@ -15,6 +15,10 @@ type Context struct {
 	Method     string
 	StatusCode int
 	Params     map[string]string //前缀树的增加，模糊匹配导致增加参数
+
+	handlers []HandlerFunc //用于中间件
+	index    int
+	engine   *Engine //引擎指针
 }
 
 //初始化
@@ -24,6 +28,15 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
+	}
+}
+
+func (c *Context) Next() { //下一个中间件
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 }
 
@@ -46,6 +59,13 @@ func (c *Context) Status(code int) {
 //头消息
 func (c *Context) SetHeader(key string, value string) {
 	c.Writer.Header().Set(key, value)
+}
+
+//fail
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
+
 }
 
 //字符串 ...是可变参数
@@ -72,10 +92,13 @@ func (c *Context) Data(code int, data []byte) {
 }
 
 //html
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
-	c.Writer.Write([]byte(html))
+	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
+		c.Fail(500, err.Error())
+	}
+
 }
 
 func (c *Context) Param(key string) string { //返回参数
