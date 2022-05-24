@@ -14,7 +14,7 @@ type HandlerFunc func(c *Context)
 type (
 	Engine struct {
 		Router        *Router
-		*RouterGroup                     //匿名结构体
+		*RouterGroup                     //匿名结构体 继承方法
 		groups        []*RouterGroup     // 存储所有的groups
 		htmlTemplates *template.Template //渲染html模板
 		funcMap       template.FuncMap
@@ -32,7 +32,15 @@ type (
 func New() *Engine {
 	engine := &Engine{Router: newRouter()}
 	engine.RouterGroup = &RouterGroup{engine: engine}
-	engine.groups = []*RouterGroup{engine.RouterGroup} //每个都映射到引擎
+	engine.groups = []*RouterGroup{engine.RouterGroup} //这里将engine的第一个Routergroup加入到切片中。
+	return engine
+}
+
+//构建默认engine
+
+func Default() *Engine {
+	engine := New()
+	engine.Use(Recovery())
 	return engine
 }
 
