@@ -12,7 +12,7 @@ type Hash func(data []byte) uint32
 //map 有所有的key
 type Map struct {
 	Hash     Hash
-	replicas int            //虚拟节点倍数
+	replicas int            //虚ls拟节点倍数
 	keys     []int          //stored 哈希环
 	hashMap  map[int]string //虚拟节点映射表
 }
