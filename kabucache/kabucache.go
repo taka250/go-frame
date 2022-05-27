@@ -48,7 +48,7 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 
 //用名字查找一个group
 func GetGroup(name string) *Group {
-	mu.RLocker()
+	mu.RLock()
 	g := groups[name]
 	mu.RUnlock()
 	return g
